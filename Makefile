@@ -1,11 +1,11 @@
 
 CFLAGS = -Wall -lm -O3
 
-default : ma-code
+default : unwind
 
-ma-code : ma-code.c
+unwind : unwind.c
 	$(CC) $(CFLAGS) -Wall $< -o $@
 
 clean :
-	rm -f ma-code
+	rm -f unwind
 
