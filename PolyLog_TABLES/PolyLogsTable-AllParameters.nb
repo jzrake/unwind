@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     16074,        461]
-NotebookOptionsPosition[     15700,        443]
-NotebookOutlinePosition[     16057,        459]
-CellTagsIndexPosition[     16014,        456]
+NotebookDataLength[     16209,        464]
+NotebookOptionsPosition[     15835,        446]
+NotebookOutlinePosition[     16192,        462]
+CellTagsIndexPosition[     16149,        459]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -390,8 +390,9 @@ Cell[BoxData[
        RowBox[{"10", "^", 
         RowBox[{"Range", "[", 
          RowBox[{
-          RowBox[{"-", "4"}], ",", "2.0", ",", "0.01"}], "]"}]}], ")"}]}]}], 
-    ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+          RowBox[{"-", "4"}], ",", 
+          RowBox[{"Log10", "[", "5", "]"}], ",", "0.01"}], "]"}]}], ")"}]}]}],
+     ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
     RowBox[{"parameters", " ", "=", " ", 
      RowBox[{"{", 
       RowBox[{"b", ",", " ", "p"}], "}"}]}], ";", "\[IndentingNewLine]", 
@@ -425,7 +426,8 @@ Cell[BoxData[
    3.573413361811912*^9, 3.5734134966472063`*^9}, {3.577642741260159*^9, 
    3.577642746466693*^9}, {3.57764286571627*^9, 3.5776428684306593`*^9}, {
    3.577642912151944*^9, 3.5776429136116247`*^9}, 3.577642954243566*^9, {
-   3.577643050126626*^9, 3.57764305641079*^9}}],
+   3.577643050126626*^9, 3.57764305641079*^9}, {3.577643113657692*^9, 
+   3.577643116382575*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -438,7 +440,8 @@ oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
 \[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
 ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
 \\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.5776427612871437`*^9, 3.5776429228841343`*^9}]
+ CellChangeTimes->{3.5776427612871437`*^9, 3.5776429228841343`*^9, 
+  3.577643059643299*^9, 3.577643125702848*^9}]
 }, Open  ]]
 },
 WindowSize->{1166, 676},
@@ -460,8 +463,8 @@ CellTagsIndex->{}
 Notebook[{
 Cell[557, 20, 6615, 203, 663, "Input"],
 Cell[CellGroupData[{
-Cell[7197, 227, 7880, 200, 774, "Input"],
-Cell[15080, 429, 604, 11, 24, "Message"]
+Cell[7197, 227, 7968, 202, 774, "Input"],
+Cell[15168, 431, 651, 12, 24, "Message"]
 }, Open  ]]
 }
 ]
