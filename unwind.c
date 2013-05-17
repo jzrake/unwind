@@ -44,6 +44,9 @@ static void dXdt(double *X, double *dXdt);
 
 static double TrajectoryRecord[MAXITER][4]; // store the previous history
 static int IterationNumber = 0;
+static int DumpCadence = 10;
+static int RestartFromDump = 0;
+static char DumpFilename[] = "unwind-restart.bin";
 
 static double PolylogTableX[MAXTABLE];
 static double PolylogTableY[MAXTABLE];
@@ -93,7 +96,7 @@ void dXdt(double *X, double *dXdt)
 
   double S1z = S1(z);
   double S2z = S2(z);
-  
+
   dXdt[0] = 1.0; // = t'
   dXdt[1] = sqrt(g*g - 1) / g; // = z'
   dXdt[3] = a/(sqrt(3.0)*M4) *
@@ -105,7 +108,7 @@ void dXdt(double *X, double *dXdt)
   double denom = 1.0 + 0.5/(g*chi) * (1/(g*sqrt(g*g-1)) - 1/chi) *
     S1z/(sig * pow(a, 3));
 
-  dXdt[2] = (term1 + term2 + term3) / denom;  // = g'
+  dXdt[2] = (term1 + term2 + term3) / denom; // = g'
 }
 
 void initialize_constants()
@@ -178,31 +181,51 @@ int main()
   load_polylog_table();
   initialize_constants();
 
+  /* The initial conditions are either created by reading from a file */
+  if (RestartFromDump) {
+    FILE *restart = fopen(DumpFilename, "r");
+    fread(&IterationNumber, sizeof(int), 1, restart);
+    fread(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
+    fclose(restart);
+  }
+  /* or by populating the first entry of TrajectoryRecord with the initial
+     values of X */
+  else {
+    IterationNumber = 1;
+    TrajectoryRecord[0][0] = 0.0; // t
+    TrajectoryRecord[0][1] = SizeOfInitialBubble; // z
+    TrajectoryRecord[0][2] = 1.0001; // g
+    TrajectoryRecord[0][3] = 1.0; // a **** I THINK THIS IS ARBITRARY ******
+  }
+
   int i;
   double dt = 1e-1;
   double X[4];
 
-  X[0] = 0.0; // t
-  X[1] = SizeOfInitialBubble; // z
-  X[2] = 1.0001; // g
-  X[3] = 1.0; // a **** I THINK THIS IS ARBITRARY ******
+  for (i=0; i<NVAR; ++i) {
+    X[i] = TrajectoryRecord[IterationNumber-1][i];
+  }
 
   while (X[0] < 4000.0) {
-
-    for (i=0; i<NVAR; ++i) {
-      TrajectoryRecord[IterationNumber][i] = X[i];
-    }
-
-    rungekutta4(X, dt);
-    ++IterationNumber;
 
     ASSERT(IterationNumber < MAXITER, "integration exceeded maximum size %d",
            MAXITER);
 
-    //    double g = X[2];
-    //    double chi = atanh(sqrt(g*g - 1)/g);
-    double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
+    rungekutta4(X, dt);
+    ++IterationNumber;
 
+    for (i=0; i<NVAR; ++i) {
+      TrajectoryRecord[IterationNumber-1][i] = X[i];
+    }
+
+    if (IterationNumber % DumpCadence == 0) {
+      FILE *restart = fopen(DumpFilename, "w");
+      fwrite(&IterationNumber, sizeof(int), 1, restart);
+      fwrite(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
+      fclose(restart);
+    }
+
+    double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
     printf("%14.12e %14.12e %14.12e %14.12e %14.12e\n", X[0], X[1], X[2], X[3], Q);
   }
 
@@ -226,7 +249,7 @@ double Sx(double z, int which)
   int WindowSize = 100;
   int i, i0, i1;
 
-  i1 = IterationNumber;
+  i1 = IterationNumber - 1;
   i0 = i1 - WindowSize;
 
   if (i0 < 0) i0 = 0;
@@ -258,10 +281,12 @@ double Sx(double z, int which)
     double chi  = atanh(sqrt(gi*gi-1)/gi);
     
     if (which == 1) {
-      integrand[i-i0] = dp * pow(ms,p+2)/pow(2*PI, p) * pow(chi,0.5*p)* F_function(chi) * abs(z-zi) * pow(ai,3) * K;
+      integrand[i-i0] = dp * pow(ms,p+2)/pow(2*PI, p) *
+	pow(chi,0.5*p)* F_function(chi) * abs(z-zi) * pow(ai,3) * K;
     }
     else if (which == 2) {
-      integrand[i-i0] = dp * pow(ms,p+2)/pow(2*PI, p) * pow(chi,0.5*p)* F_function(chi) * abs(z-zi)/(z-zi) * pow(ai,3) * K;
+      integrand[i-i0] = dp * pow(ms,p+2)/pow(2*PI, p) *
+	pow(chi,0.5*p)* F_function(chi) * abs(z-zi)/(z-zi) * pow(ai,3) * K;
     }
     times[i-i0] = ti;
   }
