@@ -179,7 +179,7 @@ int main()
   initialize_constants();
 
   int i;
-  double dt = 1e-1;
+  double dt = 1e-2;
   double X[4];
 
   X[0] = 0.0; // t
@@ -203,7 +203,29 @@ int main()
     //    double chi = atanh(sqrt(g*g - 1)/g);
     double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
 
-    printf("%14.12e %14.12e %14.12e %14.12e %14.12e\n", X[0], X[1], X[2], X[3], Q);
+
+
+    double z = X[1];
+    double g = X[2];
+    double a = X[3];
+
+    int p       = DimensionOfBrane;
+    double gs   = StringCoupling;
+    double dp   = pow(LengthOfSmallExtraDimensions, p-3);
+    double ms   = StringMass;
+    double sig  = pow(ms, p+1) * dp / (gs * 0.5*pow(2*PI, p-1));
+    double chi  = atanh(sqrt(g*g-1)/g);
+
+    double rhos = sqrt(g*g - 1)/(pow(a,3) * g * chi)* S1(z);
+    double kin  = 2.0*g*sig;
+
+    if (rhos > kin) {
+      printf("BRANE REHEATS: energy density in strings is greater than kinetic energy");
+      return 0;
+	     }
+   
+    printf("%14.8e %14.8e %14.8e %14.8e %14.8e %14.8e %14.8e \n", X[0], X[1], X[2], X[3], Q, rhos, kin);
+
   }
 
   return 0;
@@ -223,7 +245,7 @@ int main()
  */
 double Sx(double z, int which)
 {
-  int WindowSize = 100;
+  int WindowSize = 5000;
   int i, i0, i1;
 
   i1 = IterationNumber;
