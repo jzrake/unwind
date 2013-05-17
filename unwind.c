@@ -205,7 +205,7 @@ int main()
   }
 
   int i;
-  double dt = 1e-1;
+  double dt = 1e-2;
   double X[4];
 
   for (i=0; i<NVAR; ++i) {
@@ -224,6 +224,7 @@ int main()
     rungekutta4(X, dt);
     ++IterationNumber;
 
+
     for (i=0; i<NVAR; ++i) {
       TrajectoryRecord[IterationNumber-1][i] = X[i];
     }
@@ -233,6 +234,28 @@ int main()
       fwrite(&IterationNumber, sizeof(int), 1, restart);
       fwrite(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
       fclose(restart);
+    }
+
+    double z = X[1];
+    double g = X[2];
+    double a = X[3];
+
+    int p       = DimensionOfBrane;
+    double gs   = StringCoupling;
+    double dp   = pow(LengthOfSmallExtraDimensions, p-3);
+    double ms   = StringMass;
+    double sig  = pow(ms, p+1) * dp / (gs * 0.5*pow(2*PI, p-1));
+    double chi  = atanh(sqrt(g*g-1)/g);
+
+    double rhos = sqrt(g*g - 1)/(pow(a,3) * g * chi)* S1(z);
+    double kin  = 2.0*g*sig;
+
+    if (rhos > kin) {
+      fprintf(stderr, "BRANE REHEATS: energy density in strings "
+	      "is greater than kinetic energy\n");
+      //      printf("%14.8e %14.8e %14.8e %14.8e %14.8e %14.8e %14.8e \n",
+      //	     X[0], X[1], X[2], X[3], Q, rhos, kin);
+      return 0;
     }
   }
 
