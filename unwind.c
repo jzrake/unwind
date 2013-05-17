@@ -44,14 +44,14 @@ static void dXdt(double *X, double *dXdt);
 
 static double TrajectoryRecord[MAXITER][4]; // store the previous history
 static int IterationNumber = 0;
-static int DumpCadence = 10;
+static int DumpCadence = 100;
 static int RestartFromDump = 0;
 static char DumpFilename[] = "unwind-restart.bin";
 
 static double PolylogTableX[MAXTABLE];
 static double PolylogTableY[MAXTABLE];
 static int PolylogTableN;
-
+static int WindowSize = 1000;
 
 double numerically_integrate(double *x, double *y, int N)
 {
@@ -83,7 +83,12 @@ void dXdt(double *X, double *dXdt)
   double z = X[1];
   double g = X[2];
   double a = X[3];
-  
+
+  if (g < 1.0) {
+    fprintf(stderr, "Stopping the unwind because gamma=%6.5f < 1.0\n", g);
+    exit(0);
+  }
+ 
   int p       = DimensionOfBrane;
   double dVdz = potential_derivative(z); 
   double chi  = atanh(sqrt(g*g - 1)/g);
@@ -187,6 +192,7 @@ int main()
     fread(&IterationNumber, sizeof(int), 1, restart);
     fread(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
     fclose(restart);
+    //    IterationNumber = 38000;
   }
   /* or by populating the first entry of TrajectoryRecord with the initial
      values of X */
@@ -208,6 +214,10 @@ int main()
 
   while (X[0] < 4000.0) {
 
+    double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
+    printf("%d %14.12e %14.12e %14.12e %14.12e %14.12e\n", IterationNumber,
+	   X[0], X[1], X[2], X[3], Q);
+
     ASSERT(IterationNumber < MAXITER, "integration exceeded maximum size %d",
            MAXITER);
 
@@ -224,9 +234,6 @@ int main()
       fwrite(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
       fclose(restart);
     }
-
-    double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
-    printf("%14.12e %14.12e %14.12e %14.12e %14.12e\n", X[0], X[1], X[2], X[3], Q);
   }
 
   return 0;
@@ -246,7 +253,6 @@ int main()
  */
 double Sx(double z, int which)
 {
-  int WindowSize = 100;
   int i, i0, i1;
 
   i1 = IterationNumber - 1;
