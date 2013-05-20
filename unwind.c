@@ -42,16 +42,18 @@ static double numerically_integrate(double *x, double *y, int N);
 static void rungekutta4(double *X, double dt);
 static void dXdt(double *X, double *dXdt);
 
+static double TimeStep = 1.0e-2;
 static double TrajectoryRecord[MAXITER][4]; // store the previous history
 static int IterationNumber = 0;
-static int DumpCadence = 100;
+static int DumpCadence = 500;
 static int RestartFromDump = 0;
 static char DumpFilename[] = "unwind-restart.bin";
 
 static double PolylogTableX[MAXTABLE];
 static double PolylogTableY[MAXTABLE];
 static int PolylogTableN;
-static int WindowSize = 1000;
+static int LastLookUp;
+static int WindowSize;
 
 double numerically_integrate(double *x, double *y, int N)
 {
@@ -165,7 +167,7 @@ void load_polylog_table()
 {
   char line[1024];
   int n=0;
-  FILE *table = fopen("PolyLog_TABLES/ftempLL-b0-p1.dat", "r");
+  FILE *table = fopen("PolyLog_TABLES/ftempLL-b0over5-p4.dat", "r");
 
   fgets(line, 1024, table); ImpactParameter = atof(line);
   fgets(line, 1024, table); DimensionOfBrane = atoi(line);
@@ -183,6 +185,8 @@ void load_polylog_table()
 
 int main()
 {
+  LastLookUp = PolylogTableN+1; // attempting to speed up polylog lookup
+
   load_polylog_table();
   initialize_constants();
 
@@ -205,7 +209,7 @@ int main()
   }
 
   int i;
-  double dt = 1e-2;
+  double dt = TimeStep;
   double X[4];
 
   for (i=0; i<NVAR; ++i) {
@@ -253,8 +257,8 @@ int main()
     if (rhos > kin) {
       fprintf(stderr, "BRANE REHEATS: energy density in strings "
 	      "is greater than kinetic energy\n");
-      //      printf("%14.8e %14.8e %14.8e %14.8e %14.8e %14.8e %14.8e \n",
-      //	     X[0], X[1], X[2], X[3], Q, rhos, kin);
+      printf("%14.8e %14.8e %14.8e %14.8e %14.8e %14.8e %14.8e \n",
+	     X[0], X[1], X[2], X[3], Q, rhos, kin);
       return 0;
     }
   }
@@ -276,11 +280,13 @@ int main()
  */
 double Sx(double z, int which)
 {
+  WindowSize = 4.0*LengthOfLargeExtraDimensions/2.0 /TimeStep;
+  
   int i, i0, i1;
-
+  
   i1 = IterationNumber - 1;
   i0 = i1 - WindowSize;
-
+  
   if (i0 < 0) i0 = 0;
 
   double *integrand = (double*) malloc((i1-i0) * sizeof(double));
@@ -374,15 +380,43 @@ double F_function(double chi)
 {
   double x = log10(chi);
   int i;
-
-  for (i=0; i<PolylogTableN-1; ++i) {
-    if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
-      double dy = PolylogTableY[i+1] - PolylogTableY[i];
-      double dx = PolylogTableX[i+1] - PolylogTableX[i];
-      double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
-      return pow(10.0, y);
+  if (LastLookUp == PolylogTableN+1){
+    for (i=0; i<PolylogTableN-1; ++i) {
+      if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
+	double dy = PolylogTableY[i+1] - PolylogTableY[i];
+	double dx = PolylogTableX[i+1] - PolylogTableX[i];
+	double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
+	LastLookUp = i;
+	return pow(10.0, y);
+      }
     }
   }
+  else {
+    if(PolylogTableX[LastLookUp] > x){
+      for (i=LastLookUp; i>0; --i){
+	if (PolylogTableX[i] > x && x >= PolylogTableX[i-1]) {
+	  double dy = PolylogTableY[i] - PolylogTableY[i-1];
+	  double dx = PolylogTableX[i] - PolylogTableX[i-1];
+	  double y  = PolylogTableY[i-1] + (x - PolylogTableX[i-1]) * dy/dx;
+	  LastLookUp = i;
+	  return pow(10.0, y);
+	}
+      }
+    }
+    else{
+      for (i=LastLookUp; i<PolylogTableN-1; ++i) {
+	if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
+	  double dy = PolylogTableY[i+1] - PolylogTableY[i];
+	  double dx = PolylogTableX[i+1] - PolylogTableX[i];
+	  double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
+	  LastLookUp = i;
+	  return pow(10.0, y);
+	}
+      }
+    }
+  }
+
+
   ASSERT(0, "polylog value lookup failed on the value chi=%f\n", chi);
 }
 int integer_part(double x)

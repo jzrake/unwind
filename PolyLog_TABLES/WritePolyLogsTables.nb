@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     14132,        362]
-NotebookOptionsPosition[     13580,        339]
-NotebookOutlinePosition[     13916,        354]
-CellTagsIndexPosition[     13873,        351]
+NotebookDataLength[     14270,        363]
+NotebookOptionsPosition[     13718,        340]
+NotebookOutlinePosition[     14054,        355]
+CellTagsIndexPosition[     14011,        352]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -54,7 +54,7 @@ Cell[BoxData[
     RowBox[{"\[Chi]in", "=", 
      FractionBox["1", "10"]}], ";", "\[IndentingNewLine]", 
     RowBox[{"\[Chi]fin", "=", "10"}], ";", "\[IndentingNewLine]", 
-    RowBox[{"nsteps", "=", "600"}], ";", "\[IndentingNewLine]", 
+    RowBox[{"nsteps", "=", "200"}], ";", "\[IndentingNewLine]", 
     RowBox[{"list", "=", 
      RowBox[{"Table", "[", 
       RowBox[{
@@ -269,7 +269,8 @@ Cell[BoxData[
    3.57771533953784*^9, 3.577715362977939*^9}, {3.577717759554276*^9, 
    3.577717782157028*^9}, {3.577717825994058*^9, 3.577717826132083*^9}, {
    3.577717905574474*^9, 3.577717912726044*^9}, 3.577718153409631*^9, {
-   3.57771823037673*^9, 3.577718233864686*^9}}],
+   3.57771823037673*^9, 3.577718233864686*^9}, {3.578061984483956*^9, 
+   3.578061984643853*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -285,7 +286,7 @@ ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
  CellChangeTimes->{3.577713413118021*^9, 3.577713916348189*^9, 
   3.577714095228639*^9, 3.577714172853635*^9, 3.577715374849666*^9, 
   3.577717797116666*^9, 3.577717925858104*^9, 3.577718015065433*^9, 
-  3.577718164439769*^9, 3.577718243838715*^9}],
+  3.577718164439769*^9, 3.577718243838715*^9, 3.578061993978517*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -301,7 +302,7 @@ ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
  CellChangeTimes->{3.577713413118021*^9, 3.577713916348189*^9, 
   3.577714095228639*^9, 3.577714172853635*^9, 3.577715374849666*^9, 
   3.577717797116666*^9, 3.577717925858104*^9, 3.577718015065433*^9, 
-  3.577718164439769*^9, 3.577718247811717*^9}],
+  3.577718164439769*^9, 3.577718243838715*^9, 3.578061994047328*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -317,7 +318,7 @@ ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
  CellChangeTimes->{3.577713413118021*^9, 3.577713916348189*^9, 
   3.577714095228639*^9, 3.577714172853635*^9, 3.577715374849666*^9, 
   3.577717797116666*^9, 3.577717925858104*^9, 3.577718015065433*^9, 
-  3.577718164439769*^9, 3.577718251421394*^9}],
+  3.577718164439769*^9, 3.577718243838715*^9, 3.578061995348337*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -333,12 +334,12 @@ ButtonNote -> \\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.577713413118021*^9, 3.577713916348189*^9, 
   3.577714095228639*^9, 3.577714172853635*^9, 3.577715374849666*^9, 
   3.577717797116666*^9, 3.577717925858104*^9, 3.577718015065433*^9, 
-  3.577718164439769*^9, 3.577718251466386*^9}]
+  3.577718164439769*^9, 3.577718243838715*^9, 3.578061995393657*^9}]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1166, 676},
-WindowMargins->{{Automatic, 50}, {Automatic, 0}},
+WindowMargins->{{Automatic, 45}, {Automatic, 0}},
 FrontEndVersion->"9.0 for Linux x86 (32-bit) (January 25, 2013)",
 StyleDefinitions->"Default.nb"
 ]
@@ -357,11 +358,11 @@ Cell[CellGroupData[{
 Cell[579, 22, 230, 4, 60, "Subsubsection"],
 Cell[812, 28, 252, 6, 55, "Input"],
 Cell[CellGroupData[{
-Cell[1089, 38, 9354, 233, 1022, "Input"],
-Cell[10446, 273, 785, 14, 43, "Message"],
-Cell[11234, 289, 785, 14, 43, "Message"],
-Cell[12022, 305, 785, 14, 43, "Message"],
-Cell[12810, 321, 742, 14, 24, "Message"]
+Cell[1089, 38, 9404, 234, 1022, "Input"],
+Cell[10496, 274, 807, 14, 43, "Message"],
+Cell[11306, 290, 807, 14, 43, "Message"],
+Cell[12116, 306, 807, 14, 43, "Message"],
+Cell[12926, 322, 764, 14, 24, "Message"]
 }, Open  ]]
 }, Open  ]]
 }
