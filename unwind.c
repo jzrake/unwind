@@ -185,7 +185,7 @@ void load_polylog_table()
 
 int main()
 {
-  LastLookUp = PolylogTableN+1; // attempting to speed up polylog lookup
+  LastLookUp = 0; // attempting to speed up polylog lookup
 
   load_polylog_table();
   initialize_constants();
@@ -196,7 +196,6 @@ int main()
     fread(&IterationNumber, sizeof(int), 1, restart);
     fread(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
     fclose(restart);
-    //    IterationNumber = 38000;
   }
   /* or by populating the first entry of TrajectoryRecord with the initial
      values of X */
@@ -220,10 +219,24 @@ int main()
 
   while (X[0] < 4000.0) {
 
-    double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
-    printf("%d %3.2f %14.12e %14.12e %14.12e %14.12e %14.12e\n", IterationNumber,
+    double z = X[1];
+    double g = X[2];
+    double a = X[3];
+
+    int p       = DimensionOfBrane;
+    double gs   = StringCoupling;
+    double dp   = pow(LengthOfSmallExtraDimensions, p-3);
+    double ms   = StringMass;
+    double sig  = pow(ms, p+1) * dp / (gs * 0.5*pow(2*PI, p-1));
+    double chi  = atanh(sqrt(g*g-1)/g);
+    double rhos = sqrt(g*g - 1) / (pow(a,3) * g * chi) * S1(z);
+    double kin  = 2.0*g*sig;
+    double Q    = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
+
+    printf("%d %3.2f %14.12e %14.12e %14.12e %14.12e %14.12e %14.12e %14.12e\n",
+	   IterationNumber,
 	   ms_per_step,
-	   X[0], X[1], X[2], X[3], Q);
+	   X[0], X[1], X[2], X[3], Q, rhos, kin);
 
     ASSERT(IterationNumber < MAXITER, "integration exceeded maximum size %d",
            MAXITER);
@@ -243,20 +256,6 @@ int main()
       fwrite(&TrajectoryRecord[0][0], sizeof(double), MAXITER*NVAR, restart);
       fclose(restart);
     }
-
-    double z = X[1];
-    double g = X[2];
-    double a = X[3];
-
-    int p       = DimensionOfBrane;
-    double gs   = StringCoupling;
-    double dp   = pow(LengthOfSmallExtraDimensions, p-3);
-    double ms   = StringMass;
-    double sig  = pow(ms, p+1) * dp / (gs * 0.5*pow(2*PI, p-1));
-    double chi  = atanh(sqrt(g*g-1)/g);
-
-    double rhos = sqrt(g*g - 1)/(pow(a,3) * g * chi)* S1(z);
-    double kin  = 2.0*g*sig;
 
     if (rhos > kin) {
       fprintf(stderr, "BRANE REHEATS: energy density in strings "
@@ -306,10 +305,17 @@ double Sx(double z, int which)
 
     double L = LengthOfLargeExtraDimensions;
     double K = 0.0; // sum of kernel over collision points
-    double zcol = 0.5*L; // z-coordinate of collision points
-    
-    while (zcol < z) {
+    double zcol; // z-coordinate of collision points
 
+    int num_collision = integer_part(TrajectoryRecord[i0][1] / (0.5*L));
+    if (num_collision <= 1) {
+      zcol = 0.5 * L;
+    }
+    else {
+      zcol = 0.5 * L * (num_collision - 1);
+    }
+
+    while (zcol < z) {
       K += kernel_function(zcol - zi);
       zcol += 0.5 * L;
     }
@@ -383,46 +389,26 @@ double kernel_function(double z)
 double F_function(double chi)
 {
   double x = log10(chi);
-  int i;
-  if (1) {//LastLookUp == PolylogTableN+1){
-    for (i=0; i<PolylogTableN-1; ++i) {
-      if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
-	double dy = PolylogTableY[i+1] - PolylogTableY[i];
-	double dx = PolylogTableX[i+1] - PolylogTableX[i];
-	double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
-	LastLookUp = i;
-	return pow(10.0, y);
-      }
-    }
+  int di, i;
+
+  if (x < PolylogTableX[LastLookUp]) {
+    di = -1;
   }
   else {
-    if(PolylogTableX[LastLookUp] > x){
-      for (i=LastLookUp; i>0; --i){
-	if (PolylogTableX[i] > x && x >= PolylogTableX[i-1]) {
-	  double dy = PolylogTableY[i] - PolylogTableY[i-1];
-	  double dx = PolylogTableX[i] - PolylogTableX[i-1];
-	  double y  = PolylogTableY[i-1] + (x - PolylogTableX[i-1]) * dy/dx;
-	  LastLookUp = i;
-	  return pow(10.0, y);
-	}
-      }
-    }
-    else{
-      for (i=LastLookUp; i<PolylogTableN-1; ++i) {
-	if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
-	  double dy = PolylogTableY[i+1] - PolylogTableY[i];
-	  double dx = PolylogTableX[i+1] - PolylogTableX[i];
-	  double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
-	  LastLookUp = i;
-	  return pow(10.0, y);
-	}
-      }
+    di = +1;
+  }
+  for (i=LastLookUp; i<PolylogTableN-1 && i>=0; i+=di) {
+    if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
+      double dy = PolylogTableY[i+1] - PolylogTableY[i];
+      double dx = PolylogTableX[i+1] - PolylogTableX[i];
+      double y  = PolylogTableY[i] + (x - PolylogTableX[i]) * dy/dx;
+      LastLookUp = i;
+      return pow(10.0, y);
     }
   }
-
-
   ASSERT(0, "polylog value lookup failed on the value chi=%f\n", chi);
 }
+
 int integer_part(double x)
 {
   if (x > 0) {
