@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <complex.h>
+#include <time.h>
 
 #define PI (atan(1.0)*4.0)
 #define NVAR 4
@@ -42,7 +42,7 @@ static double numerically_integrate(double *x, double *y, int N);
 static void rungekutta4(double *X, double dt);
 static void dXdt(double *X, double *dXdt);
 
-static double TimeStep = 1.0e-2;
+static double TimeStep = 1.0e-1;
 static double TrajectoryRecord[MAXITER][4]; // store the previous history
 static int IterationNumber = 0;
 static int DumpCadence = 500;
@@ -211,6 +211,8 @@ int main()
   int i;
   double dt = TimeStep;
   double X[4];
+  double ms_per_step = 0.0;
+  clock_t start_clock;
 
   for (i=0; i<NVAR; ++i) {
     X[i] = TrajectoryRecord[IterationNumber-1][i];
@@ -219,15 +221,17 @@ int main()
   while (X[0] < 4000.0) {
 
     double Q = NumberOfFluxes - 2.0*X[1]/LengthOfLargeExtraDimensions;
-    printf("%d %14.12e %14.12e %14.12e %14.12e %14.12e\n", IterationNumber,
+    printf("%d %3.2f %14.12e %14.12e %14.12e %14.12e %14.12e\n", IterationNumber,
+	   ms_per_step,
 	   X[0], X[1], X[2], X[3], Q);
 
     ASSERT(IterationNumber < MAXITER, "integration exceeded maximum size %d",
            MAXITER);
 
+    start_clock = clock();
     rungekutta4(X, dt);
     ++IterationNumber;
-
+    ms_per_step = 1e3 * (clock() - start_clock) / CLOCKS_PER_SEC;
 
     for (i=0; i<NVAR; ++i) {
       TrajectoryRecord[IterationNumber-1][i] = X[i];
@@ -380,7 +384,7 @@ double F_function(double chi)
 {
   double x = log10(chi);
   int i;
-  if (LastLookUp == PolylogTableN+1){
+  if (1) {//LastLookUp == PolylogTableN+1){
     for (i=0; i<PolylogTableN-1; ++i) {
       if (PolylogTableX[i] < x && x <= PolylogTableX[i+1]) {
 	double dy = PolylogTableY[i+1] - PolylogTableY[i];
