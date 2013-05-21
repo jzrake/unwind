@@ -300,14 +300,14 @@ double Sx(double z, int which)
     double gi = Xi[2];
     double ai = Xi[3];
 
-    double K = 0.0; // sum of kernel over collision points
-    double zcol = 0.0; // z-coordinate of collision points
-
     double L = LengthOfLargeExtraDimensions;
+    double K = 0.0; // sum of kernel over collision points
+    double zcol = 0.5*L; // z-coordinate of collision points
     
     while (zcol < z) {
-      zcol += 0.5 * L;
+
       K += kernel_function(zcol - zi);
+      zcol += 0.5 * L;
     }
 
     double ms   = StringMass;
