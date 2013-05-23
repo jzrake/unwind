@@ -1,0 +1,20 @@
+DESCRIPTION
+-----------
+
+The unwind code solves a set of coupled ordinary integro-differential equations
+describing slow-roll inflation.
+
+
+AUTHORS
+-------
+
+Marjorie Schillo
+Jonathan Zrake
+Roberto Gobbetti
+Guido D'Amico
+
+
+USAGE
+-----
+
+[in progress]
